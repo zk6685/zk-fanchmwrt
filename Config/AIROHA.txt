@@ -5,6 +5,8 @@ CONFIG_TARGET_airoha=y
 CONFIG_TARGET_airoha_an7581=y
 CONFIG_TARGET_DEVICE_airoha_an7581_DEVICE_airoha_an7581-evb=y
 CONFIG_TARGET_DEVICE_airoha_an7581_DEVICE_airoha_an7581-evb-emmc=y
+CONFIG_TARGET_MULTI_PROFILE=y
+CONFIG_TARGET_PER_DEVICE_ROOTFS=y
 
 # ---- DAE (daed/eBPF) 内核配置（硬性要求，逐字保留）----
 CONFIG_DEVEL=y

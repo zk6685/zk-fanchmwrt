@@ -21,12 +21,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 默认矩阵固定三份 seed（由其他任务并行创建，命名已锁定，勿改动）。
-        # AIROHA 可手动加入此矩阵（在下方 list 中追加 "AIROHA" 即可），AN7581 EVB seed 已就绪；本次默认不纳入。
+        # 默认矩阵四份 seed（命名已锁定，勿改动）。
+        # AIROHA = AN7581 EVB 开发板 seed（含 DAE 10 项），已纳入矩阵。
         CONFIG:
           - MEDIATEK-WIFI-YES
           - MEDIATEK-WIFI-NO
           - IPQ60XX-WIFI-YES
+          - AIROHA
 
     env:
       CONFIG: ${{ matrix.CONFIG }}
