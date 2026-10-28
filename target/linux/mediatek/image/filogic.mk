@@ -3954,7 +3954,7 @@ define Device/supergateway_s20-common
   DEVICE_DTS_DIR := ../dts
   DEVICE_PACKAGES := kmod-mt7915e kmod-mt7916-firmware kmod-mt7986-firmware mt7986-wo-firmware \
     kmod-usb3 kmod-mmc kmod-nvme kmod-fs-f2fs kmod-fs-ext4 kmod-fs-vfat \
-    mkf2fs f2fsck e2fsprogs blkid blockdev losetup automount
+    mkf2fs f2fsck e2fsprogs blkid blockdev losetup
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
 

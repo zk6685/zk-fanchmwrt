@@ -9,32 +9,40 @@
 	compatible = "link,nn6000-v2", "qcom,ipq6018";
 
 	aliases {
-		ethernet0 = &swport1;
-		ethernet1 = &swport2;
-		ethernet2 = &swport3;
-		ethernet3 = &swport4;
-		ethernet4 = &swport5;
+		ethernet0 = &dp1;
+		ethernet1 = &dp2;
+		ethernet2 = &dp3;
+		ethernet3 = &dp4;
+		ethernet4 = &dp5;
 	};
 };
 
-&swport1 {
+&dp1 {
 	label = "lan1";
+	phy-handle = <&qca8075_0>;
 	status = "okay";
 };
 
-&swport2 {
+&dp2 {
 	label = "wan";
+	phy-handle = <&qca8075_1>;
+	status = "okay";
 };
 
-&swport3 {
+&dp3 {
 	label = "lan2";
+	phy-handle = <&qca8075_2>;
+	status = "okay";
 };
 
-&swport4 {
+&dp4 {
 	label = "lan3";
+	phy-handle = <&qca8075_3>;
+	status = "okay";
 };
 
-&swport5 {
+&dp5 {
 	label = "lan4";
+	phy-handle = <&qca8075_4>;
 	status = "okay";
 };
