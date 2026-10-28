@@ -1,0 +1,141 @@
+# SPDX-License-Identifier: MIT
+# fanchmwrt 云端编译流水线（自包含：构建树 = actions/checkout 检出的仓库本身，不再克隆外部源码）
+
+name: fanchmwrt-build
+
+on:
+  workflow_dispatch:
+    inputs:
+      TEST:
+        description: "仅输出 .config 不编译（快速验证配置）"
+        required: false
+        default: false
+        type: boolean
+
+permissions: write-all
+
+jobs:
+  build:
+    name: build-${{ matrix.CONFIG }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 默认矩阵固定三份 seed（由其他任务并行创建，命名已锁定，勿改动）。
+        # AIROHA 可手动加入此矩阵（在下方 list 中追加 "AIROHA" 即可），AN7581 EVB seed 已就绪；本次默认不纳入。
+        CONFIG:
+          - MEDIATEK-WIFI-YES
+          - MEDIATEK-WIFI-NO
+          - IPQ60XX-WIFI-YES
+
+    env:
+      CONFIG: ${{ matrix.CONFIG }}
+      REPO: ${{ github.server_url }}/${{ github.repository }}
+      BRANCH: ${{ github.ref_name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Initialize Environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo -E apt -yqq update
+          sudo -E apt -yqq install dos2unix libfuse-dev build-essential clang llvm
+          # immortalwrt 官方构建环境脚本（已验证可用）
+          sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)' || true
+          sudo -E systemctl daemon-reload
+          sudo -E timedatectl set-timezone "Asia/Shanghai"
+
+      - name: Cache UTC8 date
+        run: |
+          echo "BUILD_DATE=$(TZ=UTC-8 date +"%Y.%m.%d")" >> "$GITHUB_ENV"
+          echo "BUILD_DATETIME=$(TZ=UTC-8 date +"%Y.%m.%d-%H.%M.%S")" >> "$GITHUB_ENV"
+
+      - name: Update & Install Feeds
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Configure (.config + defconfig)
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          cat "Config/${{ matrix.CONFIG }}.txt" >> .config
+          make defconfig -j"$(nproc)"
+
+      - name: Upload .config (TEST mode)
+        if: ${{ inputs.TEST }}
+        uses: actions/upload-artifact@main
+        with:
+          name: config-${{ matrix.CONFIG }}
+          path: ${{ github.workspace }}/.config
+
+      - name: Free Disk Space
+        if: ${{ !inputs.TEST }}
+        uses: jlumbroso/free-disk-space@main
+        with:
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: true
+          tool-cache: false
+
+      - name: Reinstall LLVM/clang (disk cleanup removed toolchain)
+        if: ${{ !inputs.TEST }}
+        run: |
+          sudo apt-get install -y clang llvm || sudo apt-get install -y clang-14 llvm-14
+
+      - name: Download Packages
+        if: ${{ !inputs.TEST }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          make download -j"$(nproc)"
+
+      - name: Compile Firmware
+        if: ${{ !inputs.TEST }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          make -j"$(nproc)" || make -j1 V=s
+
+      - name: Collect Firmware
+        if: ${{ !inputs.TEST }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          mkdir -p ./upload/
+          cp -f ./.config "./upload/Config-${{ matrix.CONFIG }}-${{ env.BUILD_DATETIME }}.txt"
+          # 排除 buildinfo / json / sha256sums / packages 等后缀产物
+          find ./bin/targets/ -type f \
+            ! -iregex ".*buildinfo" ! -iregex ".*\.json" ! -iregex ".*sha256sums" ! -iregex ".*/packages/.*" -print0 |
+            while IFS= read -r -d '' F; do
+              BASE="$(basename "$F")"
+              EXT="${BASE##*.}"
+              NAME="${BASE%.*}"
+              mv -f "$F" "./upload/${NAME}-${{ matrix.CONFIG }}-${{ env.BUILD_DATETIME }}.${EXT}"
+            done
+          ls -la ./upload/
+
+      - name: Upload Firmware Artifact
+        if: ${{ !inputs.TEST }}
+        uses: actions/upload-artifact@main
+        with:
+          name: firmware-${{ matrix.CONFIG }}
+          path: ${{ github.workspace }}/upload/
+
+      - name: Publish Release
+        if: ${{ !inputs.TEST }}
+        uses: softprops/action-gh-release@master
+        with:
+          tag_name: ${{ matrix.CONFIG }}-${{ env.BUILD_DATE }}
+          files: ${{ github.workspace }}/upload/*
+          body: |
+            源码：${{ env.REPO }}
+            分支：${{ env.BRANCH }}
+            配置：${{ matrix.CONFIG }}
+            设备：见固件包内说明
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

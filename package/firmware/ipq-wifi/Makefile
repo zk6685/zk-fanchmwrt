@@ -6,9 +6,9 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL=$(PROJECT_GIT)/project/firmware/qca-wireless.git
-PKG_SOURCE_DATE:=2026-05-18
-PKG_SOURCE_VERSION:=e20f4c6ff197823762319e4b7e31af01816503cf
-PKG_MIRROR_HASH:=a0109d830c474aeca2716496cb2eab05319c4d6671ae2d02c43449a94da183fa
+PKG_SOURCE_DATE:=2026-10-18
+PKG_SOURCE_VERSION:=0f8eb5d74be32befb4d8bfc8e48cb98080cc86f1
+PKG_MIRROR_HASH:=4ad228d157e14c680b3300a350d22c982b7698cb2c2f692be8834bdf246af819
 PKG_FLAGS:=nonshared
 
 include $(INCLUDE_DIR)/package.mk
@@ -32,7 +32,9 @@ ALLWIFIBOARDS:= \
 	alfa-network_ap120c-ax \
 	aliyun_ap8220 \
 	arcadyan_aw1000 \
+	askey_sbe1v1k \
 	asus_rt-ax89x \
+	avm_fritzbox-4050 \
 	buffalo_wxr-5950ax12 \
 	cambiumnetworks_xe34 \
 	cmcc_mr3000d-ci \
@@ -45,9 +47,15 @@ ALLWIFIBOARDS:= \
 	glinet_gl-ax1800 \
 	glinet_gl-axt1800 \
 	glinet_gl-b3000 \
+	glinet_gl-x2000 \
+	huawei_ap4050dn \
 	ignitenet_ss-w2-ac2600 \
 	iodata_wn-dax3000gr \
+	jdcloud_re-cs-02 \
+	jdcloud_re-ss-01 \
+	link_nn6000 \
 	linksys_homewrk \
+	linksys_mr2000 \
 	linksys_mr5500 \
 	linksys_mr6350 \
 	linksys_mr7350 \
@@ -62,11 +70,15 @@ ALLWIFIBOARDS:= \
 	linksys_spnmx56 \
 	linksys_whw03 \
 	meraki_mr30h \
+	meraki_underdog \
 	meraki_z3 \
 	netgear_lbr20 \
 	netgear_rax120v2 \
 	netgear_rbk20 \
+	netgear_rbk350 \
 	netgear_rbk40 \
+	netgear_rbk750 \
+	netgear_rbk850 \
 	netgear_sxk80 \
 	netgear_wax214 \
 	netgear_wax218 \
@@ -80,34 +92,48 @@ ALLWIFIBOARDS:= \
 	redmi_ax6 \
 	skspruce_wia3300-20 \
 	spectrum_sax1v1k \
-	tplink_deco-x80-5g \
-	tplink_eap610-outdoor \
-	tplink_eap620hd-v1 \
-	tplink_eap623-outdoor-hd-v1 \
-	tplink_eap625-outdoor-hd-v1 \
-	tplink_eap660hd-v1 \
+	tcl_linkhub-hh500v \
+	tplink_archer-ax55-v1 \
 	tplink_archer-c59-v1 \
 	tplink_archer-c6-v2 \
 	tplink_archer-c60-v1 \
 	tplink_archer-c60-v2 \
+	tplink_archer-c60-v3 \
+	tplink_deco-x80-5g \
+	tplink_eap225-wall-v2 \
+	tplink_eap610-outdoor \
+	tplink_eap620-hd-v2 \
+	tplink_eap620-hd-v3 \
+	tplink_eap620hd-v1 \
+	tplink_eap623-outdoor-hd-v1 \
+	tplink_eap625-outdoor-hd-v1 \
+	tplink_eap650-outdoor-v1 \
+	tplink_eap660hd-v1 \
+	tplink_re700x \
 	tplink_tl-wa1201-v2 \
+	ubnt_utr \
 	wallys_dr40x9 \
+	wallys_dr5018s \
 	xiaomi_aiot-ac2350 \
 	xiaomi_ax3600 \
 	xiaomi_ax6000 \
 	xiaomi_ax9000 \
-	yyets_le1 \
+	xiaomi_redmi-ax5400 \
+	xunison_exigo-hub-d50-5g \
 	yuncore_ax830 \
 	yuncore_ax850 \
 	yuncore_ax880 \
 	yuncore_fap650 \
+	yyets_le1 \
 	zbtlink_zbt-z800ax \
 	zte_mf269 \
 	zte_mf286ar\
 	zte_mf286c \
 	zte_mf287 \
 	zte_mf287plus \
+	zte_t5400 \
 	zyxel_nbg7815 \
+	zyxel_nwa110ax \
 	zyxel_nwa210ax \
 	zyxel_scr50axe
 
@@ -232,6 +258,7 @@ $(eval $(call generate-ipq-wifi-package,glinet_gl-axt1800,GL.iNet GL-AXT1800))
 $(eval $(call generate-ipq-wifi-package,glinet_gl-b3000,GL.iNet GL-B3000))
 $(eval $(call generate-ipq-wifi-package,ignitenet_ss-w2-ac2600,Ignitenet SS-W2-AC2600))
 $(eval $(call generate-ipq-wifi-package,iodata_wn-dax3000gr,I-O DATA WN-DAX3000GR))
+$(eval $(call generate-ipq-wifi-package,link_nn6000,Link NN6000))
 $(eval $(call generate-ipq-wifi-package,linksys_homewrk,Linksys HomeWRK))
 $(eval $(call generate-ipq-wifi-package,linksys_mr5500,Linksys MR5500))
 $(eval $(call generate-ipq-wifi-package,linksys_mr6350,Linksys MR6350))
