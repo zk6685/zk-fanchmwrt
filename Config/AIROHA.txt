@@ -19,3 +19,11 @@ CONFIG_KERNEL_BPF_EVENTS=y
 CONFIG_BPF_TOOLCHAIN_HOST=y
 CONFIG_KERNEL_XDP_SOCKETS=y
 CONFIG_PACKAGE_kmod-xdp-sockets-diag=y
+
+# ---- PON 光口驱动（AN7581，来源 pon_drivers/pon_userspace feed）----
+CONFIG_PACKAGE_kmod-airoha-pon-frontend=y
+CONFIG_PACKAGE_kmod-airoha-xpon=y
+CONFIG_PACKAGE_kmod-airoha-en7572=y
+CONFIG_PACKAGE_kmod-airoha-paged-bosa=y
+CONFIG_PACKAGE_airoha-ponctl=y
+CONFIG_PACKAGE_airoha-pond=y
