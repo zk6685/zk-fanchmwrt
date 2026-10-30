@@ -59,7 +59,7 @@ index 6577dec92..45f1f27d0 100644
 +	bool matched = false;
 +	void *priv;
 +
-+	if (!test_bit(AIROHA_PRIV_F_PON, &dev->flags))
++	if (!(dev->flags & AIROHA_PRIV_F_PON))
 +		return false;
 +
 +	airoha_qdma_decode_pon_control(msg0, &info);
@@ -149,7 +149,7 @@ index 6577dec92..45f1f27d0 100644
 +		msg1 = le32_to_cpu(READ_ONCE(desc->msg1));
  		netdev = netdev_from_priv(dev);
 +		pon_control = airoha_qdma_is_pon_control(dev, msg0);
-+		if (test_bit(AIROHA_PRIV_F_PON, &dev->flags)) {
++		if ((dev->flags & AIROHA_PRIV_F_PON)) {
 +			u8 channel = FIELD_GET(QDMA_ETH_RXMSG_CHANNEL_MASK, msg0);
 +
 +			WRITE_ONCE(dev->pon_stats.last_rx_msg0, msg0);
@@ -196,7 +196,7 @@ index 6577dec92..45f1f27d0 100644
  					     false);
  
  		done++;
-+		if (test_bit(AIROHA_PRIV_F_PON, &dev->flags)) {
++		if ((dev->flags & AIROHA_PRIV_F_PON)) {
 +			u8 channel = FIELD_GET(QDMA_ETH_RXMSG_CHANNEL_MASK, msg0);
 +
 +			atomic64_inc(&dev->pon_stats.rx_data_packets);
@@ -207,7 +207,7 @@ index 6577dec92..45f1f27d0 100644
  		q->skb = NULL;
  		continue;
  free_frag:
-+		if (dev && !IS_ERR(dev) && test_bit(AIROHA_PRIV_F_PON, &dev->flags))
++		if (dev && !IS_ERR(dev) && (dev->flags & AIROHA_PRIV_F_PON))
 +			atomic64_inc(&dev->pon_stats.rx_descriptors_dropped);
  		if (q->skb) {
  			dev_kfree_skb(q->skb);
@@ -217,7 +217,7 @@ index 6577dec92..45f1f27d0 100644
  				netif_wake_subqueue(netdev, j);
  			}
 +
-+			if (test_bit(AIROHA_PRIV_F_PON, &dev->flags) &&
++			if ((dev->flags & AIROHA_PRIV_F_PON) &&
 +			    airoha_qdma_get_txq(qdma, 0) == qid) {
 +				const struct airoha_pon_link_ops *ops;
 +				void *priv;
@@ -243,7 +243,7 @@ index 6577dec92..45f1f27d0 100644
 +			/* PON control frames are owned by OMCI/OAM netdevs. */
 +			if (skb->dev->netdev_ops == &airoha_netdev_ops)
 +				dev = netdev_priv(skb->dev);
-+			if (dev && test_bit(AIROHA_PRIV_F_PON, &dev->flags)) {
++			if (dev && (dev->flags & AIROHA_PRIV_F_PON)) {
 +				if (desc_ctrl & QDMA_DESC_DROP_MASK) {
 +					atomic64_inc(&dev->pon_stats.tx_packets_hw_dropped);
 +				} else {
@@ -264,7 +264,7 @@ index 6577dec92..45f1f27d0 100644
 -	if (err) {
 -		netdev_err(netdev, "could not attach PHY: %d\n", err);
 -		return err;
-+	if (test_bit(AIROHA_PRIV_F_PON, &dev->flags) &&
++	if ((dev->flags & AIROHA_PRIV_F_PON) &&
 +	    (!dev->pon_link_ops || !dev->pon_link_priv)) {
 +		/* PON GDM2 requires a registered line controller. */
 +		return -ENODEV;
@@ -283,7 +283,7 @@ index 6577dec92..45f1f27d0 100644
 +	}
  
 -	netif_tx_start_all_queues(netdev);
-+	if (test_bit(AIROHA_PRIV_F_PON, &dev->flags)) {
++	if ((dev->flags & AIROHA_PRIV_F_PON)) {
 +		/* airoha-xpon opens the queue and carrier after O5 bearer setup. */
 +		netif_carrier_off(netdev);
 +		netif_tx_disable(netdev);
@@ -301,7 +301,7 @@ index 6577dec92..45f1f27d0 100644
  	if (netdev->features & NETIF_F_GRO_HW)
  		airoha_dev_lro_enable(dev);
  
-+	if (test_bit(AIROHA_PRIV_F_PON, &dev->flags)) {
++	if ((dev->flags & AIROHA_PRIV_F_PON)) {
 +		/* Start the PON line asynchronously after QDMA and NAPI are ready. */
 +		err = dev->pon_link_ops->start(dev->pon_link_priv);
 +		if (err) {
@@ -331,7 +331,7 @@ index 6577dec92..45f1f27d0 100644
  
  	netif_tx_disable(netdev);
 +	netif_carrier_off(netdev);
-+	if (test_bit(AIROHA_PRIV_F_PON, &dev->flags) && dev->pon_link_ops) {
++	if ((dev->flags & AIROHA_PRIV_F_PON) && dev->pon_link_ops) {
 +		/* Stop the PON controller before tearing down shared QDMA and NAPI. */
 +		dev->pon_link_ops->stop(dev->pon_link_priv);
 +	}
@@ -415,7 +415,7 @@ index 6577dec92..45f1f27d0 100644
 +	struct airoha_gdm_dev *dev,
 +	const struct airoha_pon_ctrl_tx_info *ctrl)
 +{
-+	bool pon = test_bit(AIROHA_PRIV_F_PON, &dev->flags);
++	bool pon = (dev->flags & AIROHA_PRIV_F_PON);
 +	u32 nr_frags, pon_tag, tag, msg0, msg1, len;
 +	/* QDMA maps every buffer, including PON control frames, on eth->dev. */
 +	struct device *dma_dev = dev->eth->dev;
@@ -696,7 +696,7 @@ index 6577dec92..45f1f27d0 100644
 +	    pon_netdev->netdev_ops != &airoha_netdev_ops)
 +		goto drop;
 +	dev = netdev_priv(pon_netdev);
-+	if (!test_bit(AIROHA_PRIV_F_PON, &dev->flags) ||
++	if (!(dev->flags & AIROHA_PRIV_F_PON) ||
 +	    !netif_running(pon_netdev) || !READ_ONCE(dev->pon_link_ops))
 +		goto drop;
 +	if (info->type != AIROHA_PON_CTRL_OMCI &&
@@ -729,7 +729,7 @@ index 6577dec92..45f1f27d0 100644
 +	if (!netdev || netdev->netdev_ops != &airoha_netdev_ops)
 +		return -EINVAL;
 +	dev = netdev_priv(netdev);
-+	if (!test_bit(AIROHA_PRIV_F_PON, &dev->flags))
++	if (!(dev->flags & AIROHA_PRIV_F_PON))
 +		return -EOPNOTSUPP;
 +	if (count > 32 || (count && !flows))
 +		return -EINVAL;
@@ -800,7 +800,7 @@ index 6577dec92..45f1f27d0 100644
 +	if (!netdev || netdev->netdev_ops != &airoha_netdev_ops)
 +		return -EINVAL;
 +	dev = netdev_priv(netdev);
-+	if (!test_bit(AIROHA_PRIV_F_PON, &dev->flags))
++	if (!(dev->flags & AIROHA_PRIV_F_PON))
 +		return -EOPNOTSUPP;
 +	if (valid && channel >= 32)
 +		return -ERANGE;
@@ -822,7 +822,7 @@ index 6577dec92..45f1f27d0 100644
 +	if (!netdev || !stats || netdev->netdev_ops != &airoha_netdev_ops)
 +		return -EINVAL;
 +	dev = netdev_priv(netdev);
-+	if (!test_bit(AIROHA_PRIV_F_PON, &dev->flags))
++	if (!(dev->flags & AIROHA_PRIV_F_PON))
 +		return -EOPNOTSUPP;
 +
 +	memset(stats, 0, sizeof(*stats));
@@ -842,7 +842,7 @@ index 6577dec92..45f1f27d0 100644
 +	    netdev->netdev_ops != &airoha_netdev_ops)
 +		return -EINVAL;
 +	dev = netdev_priv(netdev);
-+	if (!test_bit(AIROHA_PRIV_F_PON, &dev->flags))
++	if (!(dev->flags & AIROHA_PRIV_F_PON))
 +		return -EOPNOTSUPP;
 +
 +	/* RTNL serializes controller registration and interface state. */
@@ -871,7 +871,7 @@ index 6577dec92..45f1f27d0 100644
 +	if (!netdev || netdev->netdev_ops != &airoha_netdev_ops)
 +		return;
 +	dev = netdev_priv(netdev);
-+	if (!test_bit(AIROHA_PRIV_F_PON, &dev->flags))
++	if (!(dev->flags & AIROHA_PRIV_F_PON))
 +		return;
 +
 +	rtnl_lock();
@@ -902,7 +902,7 @@ index 6577dec92..45f1f27d0 100644
 +				"airoha,pon-data-path is valid only on GDM2\n");
 +			return -EINVAL;
 +		}
-+		set_bit(AIROHA_PRIV_F_PON, &dev->flags);
++		dev->flags |= AIROHA_PRIV_F_PON;
 +		/* Netdev enumeration assigns one index to each PON data path. */
 +		strscpy(netdev->name, "pon%d", IFNAMSIZ);
 +		netif_carrier_off(netdev);
@@ -910,7 +910,7 @@ index 6577dec92..45f1f27d0 100644
  	port->devs[index] = dev;
  
 -	return airoha_setup_phylink(netdev);
-+	return test_bit(AIROHA_PRIV_F_PON, &dev->flags) ? 0 :
++	return (dev->flags & AIROHA_PRIV_F_PON) ? 0 :
 +		airoha_setup_phylink(netdev);
  }
  

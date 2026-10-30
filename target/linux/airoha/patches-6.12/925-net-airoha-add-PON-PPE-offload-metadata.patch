@@ -242,7 +242,7 @@ index ddcc600f2..c42eb1b23 100644
  			 */
 -			channel = dsa_port >= 0 ? dsa_port : port->id;
 -			channel = channel % AIROHA_NUM_QOS_CHANNELS;
-+			if (test_bit(AIROHA_PRIV_F_PON, &dev->flags)) {
++			if ((dev->flags & AIROHA_PRIV_F_PON)) {
 +				err = airoha_ppe_pon_select_flow(dev, data,
 +								 &pon_tag);
 +				if (err)
@@ -342,7 +342,7 @@ index ddcc600f2..c42eb1b23 100644
 +					   &egress_dev);
 +	if (err) {
 +		if (err == -EOPNOTSUPP && egress_dev &&
-+		    test_bit(AIROHA_PRIV_F_PON, &egress_dev->flags))
++		    (egress_dev->flags & AIROHA_PRIV_F_PON))
 +			NL_SET_ERR_MSG_MOD(f->common.extack,
 +					   "PON egress has no unambiguous VLAN/P-bit to GEM mapping");
  		return err;
