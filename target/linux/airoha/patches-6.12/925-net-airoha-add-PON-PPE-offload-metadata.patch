@@ -23,10 +23,12 @@ diff --git a/drivers/net/ethernet/airoha/airoha_eth.c b/drivers/net/ethernet/air
 index 45f1f27d0..7242489ea 100644
 --- a/drivers/net/ethernet/airoha/airoha_eth.c
 +++ b/drivers/net/ethernet/airoha/airoha_eth.c
-@@ -3892,11 +3892,33 @@ int airoha_eth_pon_xmit_control(
+@@ -3892,11 +3892,35 @@ int airoha_eth_pon_xmit_control(
  }
  EXPORT_SYMBOL_GPL(airoha_eth_pon_xmit_control);
  
++extern struct mutex flow_offload_mutex;
++
 +static void
 +airoha_eth_pon_commit_config(struct airoha_gdm_dev *dev,
 +			     struct airoha_pon_flow_table *table, u32 qdma_tag)
