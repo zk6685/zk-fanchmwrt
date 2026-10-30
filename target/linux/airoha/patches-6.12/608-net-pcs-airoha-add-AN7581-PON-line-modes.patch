@@ -357,6 +357,13 @@ index 59bbb4b92..7e339f6db 100644
  };
  
  struct airoha_pcs_port {
+@@ -1666,5 +1684,6 @@ struct airoha_pcs_priv {
+ 	struct airoha_pcs_priv *priv;
+ 	int index;
++	phy_interface_t interface;
+ 
+ 	struct phylink_pcs pcs;
+ };
 @@ -1678,11 +1696,17 @@ struct airoha_pcs_match_data {
  	bool usxgmii_rx_gb_out_vld_tweak;
  	bool usxgmii_xfi_mode_sel;
